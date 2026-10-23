@@ -32,15 +32,23 @@ namespace RaidLauncher
                     TxtProgressStep.Text = msg;
                 });
             };
+            GameLaunchService.GameStarted += (proc) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    WindowState = WindowState.Minimized;
+                });
+            };
             GameLaunchService.GameExited += () =>
             {
                 Dispatcher.Invoke(() =>
                 {
+                    WindowState = WindowState.Normal;
                     BtnPlay.Content = "JUGAR (1.8.9)";
                     BtnPlay.IsEnabled = true;
                     PanelLaunchProgress.Visibility = Visibility.Collapsed;
                     ProgressBarGlobal.Visibility = Visibility.Collapsed;
-                    UpdateStatus("Juego cerrado. (Puedes revisar el registro haciendo clic en '📜 Ver Logs').");
+                    UpdateStatus("Juego cerrado. Listo para jugar con Raid Client.");
                 });
             };
 

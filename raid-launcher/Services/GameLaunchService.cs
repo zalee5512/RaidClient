@@ -112,16 +112,22 @@ namespace RaidLauncher.Services
                         try { logWriter2?.WriteLine(line); } catch { }
                     };
 
+                    if (javaExe.EndsWith("java.exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string javaw = javaExe.Substring(0, javaExe.Length - 8) + "javaw.exe";
+                        if (File.Exists(javaw)) javaExe = javaw;
+                    }
+
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = javaExe,
                         Arguments = args,
                         WorkingDirectory = mcDir,
                         UseShellExecute = false,
-                        CreateNoWindow = true,
+                        CreateNoWindow = false,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
-                        WindowStyle = ProcessWindowStyle.Hidden
+                        WindowStyle = ProcessWindowStyle.Normal
                     };
 
                     ProgressChanged?.Invoke(90, "Cargando Forge y módulos de Raid Client...");
