@@ -27,8 +27,7 @@ namespace RaidLauncher.Services
                     StatusChanged?.Invoke("Verificando archivos de Raid Client...");
                     await Task.Delay(250);
 
-                    string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    string mcDir = Path.Combine(appData, ".minecraft");
+                    string mcDir = GameInstallerService.GetGameDir();
                     string clientDir = @"C:\Programacion\raid-client";
 
                     // ─── 1. Asegurar y descargar automáticamente todos los archivos de Forge, Minecraft y librerías ───────
@@ -298,6 +297,11 @@ namespace RaidLauncher.Services
 
             string gameDir = mcDir;
             string assetsDir = Path.Combine(mcDir, "assets");
+            string vanillaAssets = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "assets");
+            if (!Directory.Exists(Path.Combine(assetsDir, "objects")) && Directory.Exists(Path.Combine(vanillaAssets, "objects")))
+            {
+                assetsDir = vanillaAssets;
+            }
             int ram = Math.Max(1, config.RamAllocationGb);
 
             string cp = BuildClasspath(mcDir, forgeVersion);

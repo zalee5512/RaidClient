@@ -47,11 +47,95 @@ namespace RaidLauncher
             Loaded += MainWindow_Loaded;
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             ApplyConfigToUi();
             RefreshAccountsUi();
             RefreshActiveAccountUi();
+
+            // Comprobar e instalar automáticamente carpeta y componentes de Raid Client al abrir el launcher
+            await InitializeAndInstallRaidClientAsync();
+        }
+
+        private async Task InitializeAndInstallRaidClientAsync()
+        {
+            try
+            {
+                string gameDir = GameInstallerService.GetGameDir();
+                bool isInstalled = GameInstallerService.IsBasicInstallationPresent(gameDir);
+
+                if (!isInstalled)
+                {
+                    BtnPlay.IsEnabled = false;
+                    BtnPlay.Content = "INSTALANDO...";
+                    PanelLaunchProgress.Visibility = Visibility.Visible;
+                    ProgressBarGlobal.Visibility = Visibility.Visible;
+                    ProgressBarLaunch.Value = 10;
+                    ProgressBarGlobal.Value = 10;
+                    TxtProgressPercent.Text = "10%";
+                    TxtProgressStep.Text = "Configurando carpeta y archivos de Raid Client...";
+                    UpdateStatus("Instalando Raid Client en su propia carpeta (.raidclient)...");
+                }
+
+                await Task.Run(async () =>
+                {
+                    await GameInstallerService.EnsureAllGameFilesAsync(
+                        gameDir,
+                        (pct, msg) =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                ProgressBarLaunch.Value = pct;
+                                ProgressBarGlobal.Value = pct;
+                                TxtProgressPercent.Text = $"{pct}%";
+                                TxtProgressStep.Text = msg;
+                            });
+                        },
+                        (msg) =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                UpdateStatus(msg);
+                            });
+                        }
+                    );
+
+                    await GameInstallerService.EnsureJavaRuntimeAsync(
+                        gameDir,
+                        (pct, msg) =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                ProgressBarLaunch.Value = pct;
+                                ProgressBarGlobal.Value = pct;
+                                TxtProgressPercent.Text = $"{pct}%";
+                                TxtProgressStep.Text = msg;
+                            });
+                        },
+                        (msg) =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                UpdateStatus(msg);
+                            });
+                        }
+                    );
+                });
+
+                PanelLaunchProgress.Visibility = Visibility.Collapsed;
+                ProgressBarGlobal.Visibility = Visibility.Collapsed;
+                BtnPlay.IsEnabled = true;
+                BtnPlay.Content = "JUGAR (1.8.9)";
+                UpdateStatus("Listo para jugar con Raid Client.");
+            }
+            catch
+            {
+                PanelLaunchProgress.Visibility = Visibility.Collapsed;
+                ProgressBarGlobal.Visibility = Visibility.Collapsed;
+                BtnPlay.IsEnabled = true;
+                BtnPlay.Content = "JUGAR (1.8.9)";
+                UpdateStatus("Listo para jugar con Raid Client.");
+            }
         }
 
         private void UpdateStatus(string message)
@@ -437,14 +521,14 @@ namespace RaidLauncher
 
         private void BtnOpenMods_Click(object sender, RoutedEventArgs e)
         {
-            string mods = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "mods");
+            string mods = Path.Combine(GameInstallerService.GetGameDir(), "mods");
             Directory.CreateDirectory(mods);
             Process.Start(new ProcessStartInfo { FileName = mods, UseShellExecute = true });
         }
 
         private void BtnOpenLauncherDir_Click(object sender, RoutedEventArgs e)
         {
-            string dir = ConfigManager.GetAppDir();
+            string dir = GameInstallerService.GetGameDir();
             Process.Start(new ProcessStartInfo { FileName = dir, UseShellExecute = true });
         }
 

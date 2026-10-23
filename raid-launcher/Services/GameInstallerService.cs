@@ -15,17 +15,47 @@ namespace RaidLauncher.Services
 
         public const string ForgeVersionId = "1.8.9-forge1.8.9-11.15.1.2318-1.8.9";
 
-        public static async Task<string?> EnsureJavaRuntimeAsync(string mcDir, Action<int, string> onProgress, Action<string> onStatus)
+        /// <summary>
+        /// Carpeta propia e independiente de Raid Client (%APPDATA%\.raidclient)
+        /// </summary>
+        public static string GetGameDir()
         {
-            // 1. Comprobar si ya tenemos Java 8 portable descargado en .raidlauncher
-            string appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".raidlauncher");
-            string portableJreDir = Path.Combine(appDir, "runtime", "jre-8");
-            if (Directory.Exists(portableJreDir))
+            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".raidclient");
+            if (!Directory.Exists(path))
             {
-                var found = Directory.GetFiles(portableJreDir, "javaw.exe", SearchOption.AllDirectories);
-                if (found.Length > 0 && File.Exists(found[0]))
+                Directory.CreateDirectory(path);
+            }
+            return path;
+        }
+
+        public static bool IsBasicInstallationPresent(string mcDir)
+        {
+            string v189Jar = Path.Combine(mcDir, "versions", "1.8.9", "1.8.9.jar");
+            string forgeJar = Path.Combine(mcDir, "libraries", "net", "minecraftforge", "forge", "1.8.9-11.15.1.2318-1.8.9", "forge-1.8.9-11.15.1.2318-1.8.9.jar");
+            string modJar = Path.Combine(mcDir, "mods", "RaidClient-1.0.jar");
+            string lwjgl = Path.Combine(mcDir, "versions", "1.8.9", "natives", "lwjgl64.dll");
+
+            return File.Exists(v189Jar) && File.Exists(forgeJar) && File.Exists(modJar) && File.Exists(lwjgl);
+        }
+
+        public static async Task<string?> EnsureJavaRuntimeAsync(string mcDir, Action<int, string>? onProgress, Action<string>? onStatus)
+        {
+            // 1. Comprobar si ya tenemos Java 8 portable descargado en .raidclient o .raidlauncher
+            string[] portableDirs = new[]
+            {
+                Path.Combine(mcDir, "runtime", "jre-8"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".raidlauncher", "runtime", "jre-8")
+            };
+
+            foreach (var dir in portableDirs)
+            {
+                if (Directory.Exists(dir))
                 {
-                    return found[0];
+                    var found = Directory.GetFiles(dir, "javaw.exe", SearchOption.AllDirectories);
+                    if (found.Length > 0 && File.Exists(found[0]))
+                    {
+                        return found[0];
+                    }
                 }
             }
 
@@ -39,22 +69,23 @@ namespace RaidLauncher.Services
             // 3. Si la computadora no tiene Java instalado, descargar Java 8 de 64 bits automáticamente
             try
             {
+                string targetDir = Path.Combine(mcDir, "runtime", "jre-8");
                 onStatus?.Invoke("Descargando motor Java 8 de 64 bits para Minecraft...");
-                onProgress?.Invoke(5, "Descargando motor Java 8 (38 MB)...");
+                onProgress?.Invoke(92, "Descargando motor Java 8 portable (38 MB)...");
 
-                Directory.CreateDirectory(portableJreDir);
+                Directory.CreateDirectory(targetDir);
                 string zipPath = Path.Combine(Path.GetTempPath(), "temurin-jre8.zip");
 
                 string jreUrl = "https://api.adoptium.net/v3/binary/latest/8/ga/windows/x64/jre/hotspot/normal/eclipse";
                 await DownloadFileAsync(jreUrl, zipPath);
 
                 onStatus?.Invoke("Configurando Java 8 de 64 bits...");
-                onProgress?.Invoke(12, "Configurando motor de Java...");
+                onProgress?.Invoke(96, "Configurando motor de Java...");
 
-                ZipFile.ExtractToDirectory(zipPath, portableJreDir, true);
+                ZipFile.ExtractToDirectory(zipPath, targetDir, true);
                 try { File.Delete(zipPath); } catch { }
 
-                var found = Directory.GetFiles(portableJreDir, "javaw.exe", SearchOption.AllDirectories);
+                var found = Directory.GetFiles(targetDir, "javaw.exe", SearchOption.AllDirectories);
                 if (found.Length > 0 && File.Exists(found[0]))
                 {
                     return found[0];
@@ -78,9 +109,10 @@ namespace RaidLauncher.Services
 
                 // Runtimes oficiales de Minecraft y TLauncher
                 Path.Combine(mcDir, "runtime", "jre-x64", "bin", "javaw.exe"),
-                Path.Combine(mcDir, "runtime", "jre-legacy", "windows-x64", "jre-legacy", "bin", "javaw.exe"),
-                Path.Combine(mcDir, "runtime", "java-runtime-alpha", "windows-x64", "java-runtime-alpha", "bin", "javaw.exe"),
-                Path.Combine(mcDir, "runtime", "java-runtime-gamma", "windows-x64", "java-runtime-gamma", "bin", "javaw.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "runtime", "jre-x64", "bin", "javaw.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "runtime", "jre-legacy", "windows-x64", "jre-legacy", "bin", "javaw.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "runtime", "java-runtime-alpha", "windows-x64", "java-runtime-alpha", "bin", "javaw.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "runtime", "java-runtime-gamma", "windows-x64", "java-runtime-gamma", "bin", "javaw.exe"),
                 @"C:\Program Files (x86)\Minecraft Launcher\runtime\jre-x64\bin\javaw.exe",
                 @"C:\Program Files (x86)\Minecraft Launcher\runtime\jre-legacy\windows-x64\jre-legacy\bin\javaw.exe",
 
@@ -148,22 +180,60 @@ namespace RaidLauncher.Services
             return null;
         }
 
-        public static async Task<bool> EnsureAllGameFilesAsync(string mcDir, Action<int, string> onProgress, Action<string> onStatus)
+        public static async Task<bool> EnsureAllGameFilesAsync(string mcDir, Action<int, string>? onProgress, Action<string>? onStatus)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(mcDir))
+                {
+                    mcDir = GetGameDir();
+                }
+
                 string versionsDir = Path.Combine(mcDir, "versions");
                 string v189Dir = Path.Combine(versionsDir, "1.8.9");
                 string vForgeDir = Path.Combine(versionsDir, ForgeVersionId);
                 string nativesDir = Path.Combine(v189Dir, "natives");
                 string librariesDir = Path.Combine(mcDir, "libraries");
                 string modsDir = Path.Combine(mcDir, "mods");
+                string configDir = Path.Combine(mcDir, "config");
+                string assetsDir = Path.Combine(mcDir, "assets");
+                string indexesDir = Path.Combine(assetsDir, "indexes");
 
+                // Crear estructura completa de carpetas de Raid Client
+                Directory.CreateDirectory(mcDir);
                 Directory.CreateDirectory(v189Dir);
                 Directory.CreateDirectory(vForgeDir);
                 Directory.CreateDirectory(nativesDir);
                 Directory.CreateDirectory(librariesDir);
                 Directory.CreateDirectory(modsDir);
+                Directory.CreateDirectory(configDir);
+                Directory.CreateDirectory(assetsDir);
+                Directory.CreateDirectory(indexesDir);
+
+                // Ruta origen de .minecraft por si ya existen archivos en la máquina (copia instantánea)
+                string vanillaDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft");
+
+                // ─── 0. Crear configuración óptima de splash.properties (sin pantalla blanca) ───
+                string splashCfg = Path.Combine(configDir, "splash.properties");
+                if (!File.Exists(splashCfg))
+                {
+                    try
+                    {
+                        File.WriteAllText(splashCfg, "# Raid Client - Disable Forge loading splash to prevent mixin conflicts\nenabled=false\n");
+                    }
+                    catch { }
+                }
+
+                // ─── 0b. Crear options.txt predeterminado de alto rendimiento si no existe ───
+                string optionsTxt = Path.Combine(mcDir, "options.txt");
+                if (!File.Exists(optionsTxt))
+                {
+                    try
+                    {
+                        File.WriteAllText(optionsTxt, "invertYMouse:false\nmouseSensitivity:0.5\nfov:0.0\ngamma:1.0\nmusic:0.0\nsound:1.0\nrenderDistance:8\nguiScale:0\nparticles:1\nbobView:true\nanaglyph3d:false\nmaxFps:260\nfboEnable:true\ndifficulty:2\nfancyGraphics:false\nao:2\nclouds:false\nskin:default\nlastServer:\nlang:es_ES\nchatVisibility:0\nchatColors:true\nchatLinks:true\nchatLinksPrompt:true\nchatOpacity:1.0\nsnooperEnabled:false\nfullscreen:false\nenableVsync:false\nuseVbo:true\nhideServerAddress:false\nadvancedItemTooltips:false\npauseOnLostFocus:true\ntouchscreen:false\noverrideWidth:0\noverrideHeight:0\nheldItemTooltips:true\nchatHeightFocused:1.0\nchatHeightUnfocused:0.44366196\nchatScale:1.0\nchatWidth:1.0\nshowInventoryAchievementHint:false\nmipmapLevels:0\nstreamBytesPerPixel:0.5\nstreamMicVolume:1.0\nstreamSystemVolume:1.0\nstreamKbps:0.5\nstreamFps:0.31690142\nstreamCompression:1\nstreamSendMetadata:true\nstreamPreferredServer:\nstreamChatEnabled:0\nstreamChatUserFilter:0\nstreamMicToggleBehavior:0\nforceUnicodeFont:false\nallowBlockAlternatives:true\nreducedDebugInfo:false\nuseNativeTransport:true\nentityShadows:false\nrealmsNotifications:false\n");
+                    }
+                    catch { }
+                }
 
                 // ─── 1. Asegurar archivos JSON de versión ─────────────────────────────
                 string mcJsonPath = Path.Combine(v189Dir, "1.8.9.json");
@@ -172,73 +242,115 @@ namespace RaidLauncher.Services
                 ExtractResourceIfMissing("1.8.9.json", mcJsonPath);
                 ExtractResourceIfMissing("1.8.9-forge.json", forgeJsonPath);
 
-                // ─── 2. Descargar Minecraft 1.8.9 base JAR (8.4 MB) si falta ──────────
+                // ─── 2. Asegurar Minecraft 1.8.9 base JAR (8.4 MB) ───────────────────
                 string mcClientJar = Path.Combine(v189Dir, "1.8.9.jar");
                 if (!File.Exists(mcClientJar) || new FileInfo(mcClientJar).Length < 1000000)
                 {
-                    onStatus?.Invoke("Descargando Minecraft 1.8.9 base oficial (8.4 MB)...");
-                    onProgress?.Invoke(15, "Descargando Minecraft 1.8.9 base...");
-                    string mcUrl = "https://launcher.mojang.com/v1/objects/3870888a6c3d349d3771a3e9d16c9bf5e076b908/client.jar";
-                    await DownloadFileAsync(mcUrl, mcClientJar);
+                    string vanilla189 = Path.Combine(vanillaDir, "versions", "1.8.9", "1.8.9.jar");
+                    if (File.Exists(vanilla189) && new FileInfo(vanilla189).Length > 1000000)
+                    {
+                        onStatus?.Invoke("Sincronizando Minecraft 1.8.9...");
+                        File.Copy(vanilla189, mcClientJar, true);
+                    }
+                    else
+                    {
+                        onStatus?.Invoke("Descargando Minecraft 1.8.9 base oficial (8.4 MB)...");
+                        onProgress?.Invoke(15, "Descargando Minecraft 1.8.9 base...");
+                        string mcUrl = "https://launcher.mojang.com/v1/objects/3870888a6c3d349d3771a3e9d16c9bf5e076b908/client.jar";
+                        await DownloadFileAsync(mcUrl, mcClientJar);
+                    }
                 }
 
-                // ─── 3. Descargar gráficos y controles nativos de Windows (LWJGL, JInput, Twitch) ───
+                // ─── 3. Asegurar gráficos y controles nativos de Windows ──────────────
                 string lwjgl64 = Path.Combine(nativesDir, "lwjgl64.dll");
                 string jinput64 = Path.Combine(nativesDir, "jinput-dx8_64.dll");
 
                 if (!File.Exists(lwjgl64) || !File.Exists(jinput64))
                 {
-                    onStatus?.Invoke("Descargando gráficos nativos y controles de Windows...");
-                    onProgress?.Invoke(25, "Instalando aceleración gráfica (Natives)...");
-
-                    string[] nativeUrls = new[]
+                    string vanillaNatives = Path.Combine(vanillaDir, "versions", "1.8.9", "natives");
+                    if (Directory.Exists(vanillaNatives) && File.Exists(Path.Combine(vanillaNatives, "lwjgl64.dll")))
                     {
-                        "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-windows.jar",
-                        "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar",
-                        "https://libraries.minecraft.net/tv/twitch/twitch-platform/6.5/twitch-platform-6.5-natives-windows-64.jar"
-                    };
-
-                    foreach (var nUrl in nativeUrls)
-                    {
-                        string tempJar = Path.Combine(Path.GetTempPath(), Path.GetFileName(nUrl));
-                        await DownloadFileAsync(nUrl, tempJar);
-                        try
+                        onStatus?.Invoke("Sincronizando controladores gráficos nativos...");
+                        foreach (var dll in Directory.GetFiles(vanillaNatives, "*.dll"))
                         {
-                            using var archive = ZipFile.OpenRead(tempJar);
-                            foreach (var entry in archive.Entries)
+                            try { File.Copy(dll, Path.Combine(nativesDir, Path.GetFileName(dll)), true); } catch { }
+                        }
+                    }
+                    else
+                    {
+                        onStatus?.Invoke("Descargando gráficos nativos y controles de Windows...");
+                        onProgress?.Invoke(25, "Instalando aceleración gráfica (Natives)...");
+
+                        string[] nativeUrls = new[]
+                        {
+                            "https://libraries.minecraft.net/org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-windows.jar",
+                            "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar",
+                            "https://libraries.minecraft.net/tv/twitch/twitch-platform/6.5/twitch-platform-6.5-natives-windows-64.jar"
+                        };
+
+                        foreach (var nUrl in nativeUrls)
+                        {
+                            string tempJar = Path.Combine(Path.GetTempPath(), Path.GetFileName(nUrl));
+                            await DownloadFileAsync(nUrl, tempJar);
+                            try
                             {
-                                if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                                using var archive = ZipFile.OpenRead(tempJar);
+                                foreach (var entry in archive.Entries)
                                 {
-                                    string dest = Path.Combine(nativesDir, entry.Name);
-                                    entry.ExtractToFile(dest, true);
+                                    if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        string dest = Path.Combine(nativesDir, entry.Name);
+                                        entry.ExtractToFile(dest, true);
+                                    }
                                 }
                             }
+                            catch { }
+                            try { File.Delete(tempJar); } catch { }
                         }
-                        catch { }
-                        try { File.Delete(tempJar); } catch { }
                     }
                 }
 
-                // ─── 3b. Descargar índice de recursos 1.8.json (sonidos, texturas e idiomas) ───
-                string assetIndexDir = Path.Combine(mcDir, "assets", "indexes");
-                Directory.CreateDirectory(assetIndexDir);
-                string assetIndex18 = Path.Combine(assetIndexDir, "1.8.json");
+                // ─── 3b. Asegurar índice de recursos 1.8.json ─────────────────────────
+                string assetIndex18 = Path.Combine(indexesDir, "1.8.json");
                 if (!File.Exists(assetIndex18) || new FileInfo(assetIndex18).Length < 1000)
                 {
-                    onStatus?.Invoke("Descargando índice de recursos de Minecraft 1.8...");
-                    string assetUrl = "https://launchermeta.mojang.com/v1/packages/f6ad102bcaa53b1a58358f16e376d548d44933ec/1.8.json";
-                    await DownloadFileAsync(assetUrl, assetIndex18);
+                    string vanillaIndex = Path.Combine(vanillaDir, "assets", "indexes", "1.8.json");
+                    if (File.Exists(vanillaIndex))
+                    {
+                        File.Copy(vanillaIndex, assetIndex18, true);
+                    }
+                    else
+                    {
+                        onStatus?.Invoke("Descargando índice de recursos de Minecraft 1.8...");
+                        string assetUrl = "https://launchermeta.mojang.com/v1/packages/f6ad102bcaa53b1a58358f16e376d548d44933ec/1.8.json";
+                        await DownloadFileAsync(assetUrl, assetIndex18);
+                    }
                 }
 
-                // ─── 4. Descargar motor Forge 1.8.9 Universal si falta ─────────────────
+                // ─── 4. Asegurar motor Forge 1.8.9 Universal ──────────────────────────
                 string forgeJar = Path.Combine(librariesDir, "net", "minecraftforge", "forge", "1.8.9-11.15.1.2318-1.8.9", "forge-1.8.9-11.15.1.2318-1.8.9.jar");
                 if (!File.Exists(forgeJar) || new FileInfo(forgeJar).Length < 1000000)
                 {
-                    onStatus?.Invoke("Descargando motor oficial Forge 1.8.9...");
-                    onProgress?.Invoke(40, "Descargando motor Forge 1.8.9 (3.8 MB)...");
+                    string vanillaForge = Path.Combine(vanillaDir, "libraries", "net", "minecraftforge", "forge", "1.8.9-11.15.1.2318-1.8.9", "forge-1.8.9-11.15.1.2318-1.8.9.jar");
+                    string localDevForge = @"C:\Programacion\forge-1.8.9-11.15.1.2318-1.8.9-universal.jar";
+
                     Directory.CreateDirectory(Path.GetDirectoryName(forgeJar)!);
-                    string forgeUrl = "https://maven.minecraftforge.net/net/minecraftforge/forge/1.8.9-11.15.1.2318-1.8.9/forge-1.8.9-11.15.1.2318-1.8.9-universal.jar";
-                    await DownloadFileAsync(forgeUrl, forgeJar);
+
+                    if (File.Exists(localDevForge) && new FileInfo(localDevForge).Length > 1000000)
+                    {
+                        File.Copy(localDevForge, forgeJar, true);
+                    }
+                    else if (File.Exists(vanillaForge) && new FileInfo(vanillaForge).Length > 1000000)
+                    {
+                        File.Copy(vanillaForge, forgeJar, true);
+                    }
+                    else
+                    {
+                        onStatus?.Invoke("Descargando motor oficial Forge 1.8.9...");
+                        onProgress?.Invoke(40, "Descargando motor Forge 1.8.9 (3.8 MB)...");
+                        string forgeUrl = "https://maven.minecraftforge.net/net/minecraftforge/forge/1.8.9-11.15.1.2318-1.8.9/forge-1.8.9-11.15.1.2318-1.8.9-universal.jar";
+                        await DownloadFileAsync(forgeUrl, forgeJar);
+                    }
                 }
 
                 // ─── 5. Analizar y descargar librerías faltantes ────────────────────────
@@ -250,11 +362,30 @@ namespace RaidLauncher.Services
                 CheckLibrariesFromJson(mcJsonPath, librariesDir, missingLibs);
                 CheckLibrariesFromJson(forgeJsonPath, librariesDir, missingLibs);
 
-                if (missingLibs.Count > 0)
+                // Comprobar primero si podemos copiarlas desde .minecraft/libraries
+                var stillMissing = new List<(string Name, string? BaseUrl, string LocalPath)>();
+                foreach (var lib in missingLibs)
                 {
-                    int total = missingLibs.Count;
+                    string relPath = MavenToRelativePath(lib.Name).Replace('/', Path.DirectorySeparatorChar);
+                    string vanillaLib = Path.Combine(vanillaDir, "libraries", relPath);
+
+                    if (File.Exists(vanillaLib) && new FileInfo(vanillaLib).Length > 0)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(lib.LocalPath)!);
+                        try { File.Copy(vanillaLib, lib.LocalPath, true); } catch { }
+                    }
+
+                    if (!File.Exists(lib.LocalPath))
+                    {
+                        stillMissing.Add(lib);
+                    }
+                }
+
+                if (stillMissing.Count > 0)
+                {
+                    int total = stillMissing.Count;
                     int done = 0;
-                    foreach (var lib in missingLibs)
+                    foreach (var lib in stillMissing)
                     {
                         done++;
                         int pct = 50 + (int)((done / (float)total) * 35);
@@ -277,19 +408,28 @@ namespace RaidLauncher.Services
                     }
                 }
 
-                // ─── 6. Sincronizar RaidClient-1.0.jar en .minecraft/mods ──────────────
+                // ─── 6. Sincronizar RaidClient-1.0.jar en .raidclient/mods ──────────────
                 onStatus?.Invoke("Sincronizando Raid Client...");
-                onProgress?.Invoke(90, "Instalando módulos de Raid Client...");
+                onProgress?.Invoke(88, "Instalando módulos de Raid Client...");
 
                 string targetModJar = Path.Combine(modsDir, "RaidClient-1.0.jar");
-                ExtractResourceIfMissing("RaidClient-1.0.jar", targetModJar, forceOverwrite: true);
+                string devModJar = @"C:\Programacion\raid-client\build\libs\RaidClient-1.0.jar";
 
-                onProgress?.Invoke(95, "¡Todos los archivos verificados con éxito!");
+                if (File.Exists(devModJar))
+                {
+                    try { File.Copy(devModJar, targetModJar, true); } catch { }
+                }
+                else
+                {
+                    ExtractResourceIfMissing("RaidClient-1.0.jar", targetModJar, forceOverwrite: true);
+                }
+
+                onProgress?.Invoke(90, "Archivos de Raid Client listos.");
                 return true;
             }
             catch (Exception ex)
             {
-                onStatus?.Invoke("Error al verificar archivos: " + ex.Message);
+                onStatus?.Invoke("Aviso al verificar archivos: " + ex.Message);
                 return false;
             }
         }

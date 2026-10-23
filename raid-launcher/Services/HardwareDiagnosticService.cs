@@ -247,9 +247,11 @@ namespace RaidLauncher.Services
                 string clientDir = @"C:\Programacion\raid-client";
                 string runOptions = Path.Combine(clientDir, "run", "options.txt");
                 string mcOptions = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft", "options.txt");
+                string raidOptions = Path.Combine(GameInstallerService.GetGameDir(), "options.txt");
 
                 ApplyOptimizedOptions(runOptions);
                 ApplyOptimizedOptions(mcOptions);
+                ApplyOptimizedOptions(raidOptions);
             }
             catch { }
 
