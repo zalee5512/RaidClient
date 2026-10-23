@@ -32,11 +32,11 @@ public class NametagMod extends Mod {
     public final BooleanSetting showFaction = new BooleanSetting("Mostrar Facción", true);
     public final BooleanSetting showHealth = new BooleanSetting("Mostrar Vida (HP)", true);
     public final BooleanSetting showStats = new BooleanSetting("Mostrar Estadísticas", true);
-    public final BooleanSetting showPing = new BooleanSetting("Mostrar Ping", true);
+    public final BooleanSetting showPing = new BooleanSetting("Mostrar Ping", false);
     public final BooleanSetting showKills = new BooleanSetting("Mostrar Kills", true);
     public final BooleanSetting showDeaths = new BooleanSetting("Mostrar Deaths", true);
     public final BooleanSetting showArmor = new BooleanSetting("Mostrar Armadura", false);
-    public final BooleanSetting showEmblem = new BooleanSetting("Mostrar Emblema", true);
+    public final BooleanSetting showEmblem = new BooleanSetting("Mostrar Emblema", false);
     public final BooleanSetting throughWalls = new BooleanSetting("A través de Paredes", true);
     public final BooleanSetting background = new BooleanSetting("Fondo Oscuro", true);
     public final NumberSetting scale = new NumberSetting("Escala", 1.0, 0.5, 2.5, 0.05);
@@ -182,15 +182,15 @@ public class NametagMod extends Mod {
                         double horizDistSq = dx * dx + dz * dz;
 
                         // Los ArmorStands de nametags en Spigot/Paper flotan sobre la cabeza del jugador
-                        if (horizDistSq <= 4.0 && dy >= -0.5 && dy <= 4.2) {
+                        if (horizDistSq <= 4.0 && dy >= -1.5 && dy <= 5.0) {
                             String txt = as.getCustomNameTag();
                             if (txt != null && !txt.isEmpty()) {
                                 String clean = txt.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim();
                                 String cleanLower = clean.toLowerCase();
-                                if ((txt.contains("■") || (txt.contains("[") && txt.contains("|")) || cleanLower.contains("dtr")) &&
+                                if ((txt.contains("■") || txt.contains("◄") || txt.contains("◀") || (txt.contains("[") && txt.contains("|")) || cleanLower.contains("dtr")) &&
                                     !cleanLower.contains("enem") && !cleanLower.contains("alli") && !cleanLower.contains("team")) {
                                     serverFactionLine = txt;
-                                } else if (txt.contains("⚒") || txt.contains("⚔") || txt.contains("☠") ||
+                                } else if (txt.contains("⚒") || txt.contains("⚔") || txt.contains("☠") || txt.contains("✖") ||
                                            cleanLower.contains("kill") || cleanLower.contains("death") ||
                                            cleanLower.contains("muerte") || (txt.contains(":") && txt.contains("|"))) {
                                     // Descartar si solo es indicador de distancia en metros o bloques
@@ -208,9 +208,9 @@ public class NametagMod extends Mod {
         // Construir la lista de líneas en el orden exacto del diseño HCF
         List<NametagLine> lines = new ArrayList<>();
 
-        // Línea 1: Nombre del jugador (con caja oscura)
+        // Línea 1: Nombre del jugador (sin caja oscura, texto limpio con sombra como en el diseño)
         String nameText = relationCode + player.getName();
-        lines.add(new NametagLine(nameText, true));
+        lines.add(new NametagLine(nameText, false));
 
         // Línea 2: Vida (20 ❤ sin caja, texto blanco y corazón rojo flotante)
         if (showHealth.isEnabled()) {
@@ -219,7 +219,7 @@ public class NametagMod extends Mod {
             lines.add(new NametagLine(healthText, false));
         }
 
-        // Línea 3: Stats (⚒: 16 | ⚔: 5 | ☠: 1 con caja oscura)
+        // Línea 3: Stats (⚒: 3 | ⚔: 10 con caja oscura)
         if (showStats.isEnabled()) {
             String statsText;
             if (serverStatsLine != null) {
@@ -230,19 +230,23 @@ public class NametagMod extends Mod {
                     parts.add("§a⚒: " + getPing(player));
                 }
                 if (showKills.isEnabled()) {
-                    parts.add("§c⚔: " + getKills(player));
+                    parts.add("§a⚒: " + getKills(player));
                 }
                 if (showDeaths.isEnabled()) {
-                    parts.add("§4☠: " + getDeaths(player));
+                    parts.add("§c⚔: " + getDeaths(player));
                 }
-                statsText = String.join(" §7| ", parts);
+                if (parts.size() == 2 && showKills.isEnabled() && showDeaths.isEnabled() && !showPing.isEnabled()) {
+                    statsText = "§a⚒: " + getKills(player) + " §7| §c⚔: " + getDeaths(player);
+                } else {
+                    statsText = String.join(" §7| ", parts);
+                }
             }
             if (statsText != null && !statsText.isEmpty()) {
                 lines.add(new NametagLine(statsText, true));
             }
         }
 
-        // Línea 4: Facción con DTR y Rango ([Bulls | 6.0 ■ | Silver V] con caja oscura)
+        // Línea 4: Facción con DTR y Rango ([yol | 1.8◄ | Silver IV] con caja oscura)
         if (showFaction.isEnabled()) {
             String factionText = null;
 
@@ -258,7 +262,7 @@ public class NametagMod extends Mod {
                 if (faction != null && !faction.isEmpty() && isValidFaction(faction)) {
                     String dtr = getDTR(player);
                     String rank = getRank(player);
-                    factionText = "§6[" + relationCode + faction + " §7| §a" + dtr + " ■ §7| §7" + rank + "§6]";
+                    factionText = "§6[" + relationCode + faction + " §7| §a" + dtr + "◄ §7| §7" + rank + "§6]";
                 }
             }
 
@@ -276,7 +280,7 @@ public class NametagMod extends Mod {
         }
         float s = 0.024F * this.scale.getValueFloat() * distFactor;
 
-        int lineHeight = 12;
+        int lineHeight = 11;
         int totalHeight = lines.size() * lineHeight;
 
         // Posición Y de inicio calculada para que la base quede justo sobre la cabeza
@@ -309,7 +313,7 @@ public class NametagMod extends Mod {
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
 
-        // Emblema superior (Valknut azul)
+        // Emblema superior (opcional, desactivado por defecto)
         if (showEmblem.isEnabled()) {
             String emblem = "§bᛟ";
             int emblemW = fr.getStringWidth(emblem);
@@ -323,7 +327,7 @@ public class NametagMod extends Mod {
             int halfW = lineWidth / 2;
 
             if (line.hasBackground && background.isEnabled()) {
-                Gui.drawRect(-halfW - 3, currentY - 2, halfW + 3, currentY + 10, 0x85000000);
+                Gui.drawRect(-halfW - 2, currentY - 1, halfW + 2, currentY + 9, 0x75000000);
             }
 
             fr.drawStringWithShadow(line.text, -halfW, currentY, 0xFFFFFFFF);
@@ -437,7 +441,7 @@ public class NametagMod extends Mod {
     }
 
     public String getDTR(EntityPlayer player) {
-        if (player == null || mc.theWorld == null) return "6.0";
+        if (player == null || mc.theWorld == null) return "1.8";
         try {
             for (Entity e : mc.theWorld.loadedEntityList) {
                 if (e instanceof EntityArmorStand) {
@@ -450,8 +454,8 @@ public class NametagMod extends Mod {
                             String name = as.getCustomNameTag();
                             if (name != null) {
                                 String clean = name.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim();
-                                if (clean.contains("■")) {
-                                    Matcher m = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)\\s*■").matcher(clean);
+                                if (clean.contains("◄") || clean.contains("◀") || clean.contains("■")) {
+                                    Matcher m = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)\\s*[◄◀■]").matcher(clean);
                                     if (m.find()) {
                                         return m.group(1);
                                     }
@@ -471,11 +475,11 @@ public class NametagMod extends Mod {
                 }
             }
         } catch (Throwable ignored) {}
-        return "6.0";
+        return "1.8";
     }
 
     public String getRank(EntityPlayer player) {
-        if (player == null) return "Member";
+        if (player == null) return "Silver IV";
         try {
             if (mc.theWorld != null) {
                 for (Entity e : mc.theWorld.loadedEntityList) {
@@ -513,7 +517,7 @@ public class NametagMod extends Mod {
                 }
             }
         } catch (Throwable ignored) {}
-        return "Member";
+        return "Silver IV";
     }
 
     public boolean isTeammate(EntityPlayer player) {
