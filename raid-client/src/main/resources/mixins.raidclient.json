@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "com.raidclient.mixin",
+  "refmap": "mixins.raidclient.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "client.MixinMinecraft",
+    "client.MixinGuiIngame",
+    "client.MixinRenderManager",
+    "client.MixinEntityPlayerSP",
+    "client.MixinEntityRenderer",
+    "client.MixinItemRenderer",
+    "client.MixinRenderEntityItem",
+    "client.MixinSplashProgress"
+  ]
+}

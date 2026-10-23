@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\icon.ico" />
+    <Resource Include="Assets\icon.png" />
+    <EmbeddedResource Include="..\raid-client\build\libs\RaidClient-1.0.jar" LogicalName="RaidClient-1.0.jar" />
+    <EmbeddedResource Include="Assets\1.8.9.json" LogicalName="1.8.9.json" />
+    <EmbeddedResource Include="Assets\1.8.9-forge.json" LogicalName="1.8.9-forge.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="10.0.13" />
+  </ItemGroup>
+
+</Project>

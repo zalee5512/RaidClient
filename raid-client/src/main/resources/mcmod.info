@@ -1,0 +1,16 @@
+[
+{
+  "modid": "raidclient",
+  "name": "Raid Client",
+  "description": "High performance Minecraft 1.8.9 PvP Client with Custom Crosshair, Hitboxes, HUD editor and optimization.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://raidclient.net",
+  "updateUrl": "",
+  "authorList": ["RaidTeam"],
+  "credits": "Raid Client Development Team",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

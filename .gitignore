@@ -1,0 +1,25 @@
+# Tools & binaries
+tools/
+dist/
+*.exe
+forge-*.jar
+net/
+
+# Gradle & Java
+.gradle/
+build/
+*.class
+*.jar
+!raid-launcher/Resources/*.jar
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Logs & OS files
+*.log
+Thumbs.db
+.DS_Store
