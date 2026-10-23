@@ -75,13 +75,32 @@ public class NametagMod extends Mod {
         if (as.hasCustomName()) {
             String name = as.getCustomNameTag();
             if (name == null || name.isEmpty()) return false;
+
+            String lower = name.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim().toLowerCase();
+            if (lower.contains("enem") || lower.contains("alli") || lower.contains("ally") ||
+                lower.contains("neutr") || lower.contains("team") || lower.contains("dtr") ||
+                lower.contains("■") || lower.contains("⚒") || lower.contains("⚔") || lower.contains("☠") ||
+                lower.contains("silver") || lower.contains("gold") || lower.contains("bronze") ||
+                lower.contains("kills") || lower.contains("deaths") ||
+                (name.contains("[") && name.contains("]"))) {
+                return true;
+            }
+
             if (as.isInvisible() || as.hasMarker()) {
                 return true;
             }
-            if (name.contains("■") || name.contains("⚒") || name.contains("⚔") ||
-                name.contains("Silver") || name.contains("Gold") || name.contains("Bronze") ||
-                name.contains("DTR") || (name.contains("[") && name.contains("|"))) {
-                return true;
+
+            // Si está situado sobre cualquier jugador conectado, es un holograma de nametag del servidor
+            if (mc.theWorld != null) {
+                for (EntityPlayer p : mc.theWorld.playerEntities) {
+                    if (p == null) continue;
+                    double dx = as.posX - p.posX;
+                    double dy = as.posY - p.posY;
+                    double dz = as.posZ - p.posZ;
+                    if (dx * dx + dz * dz <= 4.0 && dy >= -1.5 && dy <= 5.0) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
@@ -166,17 +185,16 @@ public class NametagMod extends Mod {
                         if (horizDistSq <= 4.0 && dy >= -0.5 && dy <= 4.2) {
                             String txt = as.getCustomNameTag();
                             if (txt != null && !txt.isEmpty()) {
-                                String clean = txt.replaceAll("(?i)§[0-9a-fk-or]", "").trim();
-                                if (txt.contains("■") || (txt.contains("[") && txt.contains("|")) || clean.toLowerCase().contains("dtr")) {
-                                    // Asegurar que no use una línea que diga 'enemies'
-                                    if (!clean.toLowerCase().contains("enemies") && !clean.toLowerCase().contains("enemy")) {
-                                        serverFactionLine = txt;
-                                    }
+                                String clean = txt.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim();
+                                String cleanLower = clean.toLowerCase();
+                                if ((txt.contains("■") || (txt.contains("[") && txt.contains("|")) || cleanLower.contains("dtr")) &&
+                                    !cleanLower.contains("enem") && !cleanLower.contains("alli") && !cleanLower.contains("team")) {
+                                    serverFactionLine = txt;
                                 } else if (txt.contains("⚒") || txt.contains("⚔") || txt.contains("☠") ||
-                                           clean.toLowerCase().contains("kill") || clean.toLowerCase().contains("death") ||
-                                           clean.toLowerCase().contains("muerte") || (txt.contains(":") && txt.contains("|"))) {
+                                           cleanLower.contains("kill") || cleanLower.contains("death") ||
+                                           cleanLower.contains("muerte") || (txt.contains(":") && txt.contains("|"))) {
                                     // Descartar si solo es indicador de distancia en metros o bloques
-                                    if (!clean.toLowerCase().endsWith("m") && !clean.toLowerCase().contains("bloque")) {
+                                    if (!cleanLower.endsWith("m") && !cleanLower.contains("bloque") && !cleanLower.contains("block")) {
                                         serverStatsLine = txt;
                                     }
                                 }
@@ -229,8 +247,13 @@ public class NametagMod extends Mod {
             String factionText = null;
 
             if (serverFactionLine != null) {
-                factionText = serverFactionLine;
-            } else {
+                String cleanServer = serverFactionLine.replaceAll("(?i)[§&][0-9a-fk-or]", "").toLowerCase();
+                if (!cleanServer.contains("enem") && !cleanServer.contains("alli") && !cleanServer.contains("team")) {
+                    factionText = serverFactionLine;
+                }
+            }
+
+            if (factionText == null) {
                 String faction = getFaction(player);
                 if (faction != null && !faction.isEmpty() && isValidFaction(faction)) {
                     String dtr = getDTR(player);
@@ -414,21 +437,83 @@ public class NametagMod extends Mod {
     }
 
     public String getDTR(EntityPlayer player) {
+        if (player == null || mc.theWorld == null) return "6.0";
+        try {
+            for (Entity e : mc.theWorld.loadedEntityList) {
+                if (e instanceof EntityArmorStand) {
+                    EntityArmorStand as = (EntityArmorStand) e;
+                    if (as.hasCustomName()) {
+                        double dx = as.posX - player.posX;
+                        double dy = as.posY - player.posY;
+                        double dz = as.posZ - player.posZ;
+                        if (dx * dx + dz * dz <= 4.0 && dy >= -1.5 && dy <= 5.0) {
+                            String name = as.getCustomNameTag();
+                            if (name != null) {
+                                String clean = name.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim();
+                                if (clean.contains("■")) {
+                                    Matcher m = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)\\s*■").matcher(clean);
+                                    if (m.find()) {
+                                        return m.group(1);
+                                    }
+                                } else if (clean.toLowerCase().contains("dtr")) {
+                                    Matcher m = Pattern.compile("(-?[0-9]+(?:\\.[0-9]+)?)\\s*dtr", Pattern.CASE_INSENSITIVE).matcher(clean);
+                                    if (m.find()) {
+                                        return m.group(1);
+                                    }
+                                    m = Pattern.compile("dtr:?\\s*(-?[0-9]+(?:\\.[0-9]+)?)", Pattern.CASE_INSENSITIVE).matcher(clean);
+                                    if (m.find()) {
+                                        return m.group(1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
         return "6.0";
     }
 
     public String getRank(EntityPlayer player) {
-        ScorePlayerTeam team = (ScorePlayerTeam) player.getTeam();
-        if (team != null) {
-            String suffix = team.getColorSuffix();
-            if (suffix != null && !suffix.trim().isEmpty()) {
-                String clean = suffix.replaceAll("(?i)§[0-9a-fk-or]", "").trim();
-                if (!clean.isEmpty() && clean.length() <= 12 && isValidFaction(clean)) {
-                    return clean;
+        if (player == null) return "Member";
+        try {
+            if (mc.theWorld != null) {
+                for (Entity e : mc.theWorld.loadedEntityList) {
+                    if (e instanceof EntityArmorStand) {
+                        EntityArmorStand as = (EntityArmorStand) e;
+                        if (as.hasCustomName()) {
+                            double dx = as.posX - player.posX;
+                            double dy = as.posY - player.posY;
+                            double dz = as.posZ - player.posZ;
+                            if (dx * dx + dz * dz <= 4.0 && dy >= -1.5 && dy <= 5.0) {
+                                String name = as.getCustomNameTag();
+                                if (name != null && name.contains("|")) {
+                                    String clean = name.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim();
+                                    String[] parts = clean.split("\\|");
+                                    if (parts.length >= 3) {
+                                        String rankCand = parts[2].replace("]", "").replace("}", "").trim();
+                                        if (!rankCand.isEmpty() && rankCand.length() <= 16 && !rankCand.equalsIgnoreCase(player.getName())) {
+                                            return rankCand;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        }
-        return "Silver V";
+            ScorePlayerTeam team = (ScorePlayerTeam) player.getTeam();
+            if (team != null) {
+                String suffix = team.getColorSuffix();
+                if (suffix != null && !suffix.trim().isEmpty()) {
+                    String clean = suffix.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim();
+                    if (!clean.isEmpty() && clean.length() <= 12 && !clean.equalsIgnoreCase(player.getName())) {
+                        return clean;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return "Member";
     }
 
     public boolean isTeammate(EntityPlayer player) {
@@ -480,8 +565,9 @@ public class NametagMod extends Mod {
 
     public String getFaction(EntityPlayer player) {
         if (player == null) return null;
+        String pName = player.getName();
 
-        // 1. Extraer desde ArmorStands del servidor (ej: [Bulls | 6.0 ■ | Silver V] -> "Bulls")
+        // 1. Extraer desde ArmorStands del servidor (ej: [Bulls | 6.0 ■ | Silver V] -> "Bulls", o [Bulls])
         if (mc.theWorld != null) {
             for (Entity e : mc.theWorld.loadedEntityList) {
                 if (e instanceof EntityArmorStand) {
@@ -490,8 +576,8 @@ public class NametagMod extends Mod {
                         double dx = as.posX - player.posX;
                         double dy = as.posY - player.posY;
                         double dz = as.posZ - player.posZ;
-                        if (dx * dx + dz * dz <= 4.0 && dy >= -0.5 && dy <= 4.2) {
-                            String tag = extractFactionTag(as.getCustomNameTag());
+                        if (dx * dx + dz * dz <= 4.0 && dy >= -1.5 && dy <= 5.0) {
+                            String tag = extractFactionTag(as.getCustomNameTag(), pName);
                             if (tag != null && isValidFaction(tag)) {
                                 return tag;
                             }
@@ -504,18 +590,18 @@ public class NametagMod extends Mod {
         // 2. Extraer desde Team Prefix y Suffix
         ScorePlayerTeam team = (ScorePlayerTeam) player.getTeam();
         if (team != null) {
-            String tag = extractFactionTag(team.getColorPrefix());
+            String tag = extractFactionTag(team.getColorPrefix(), pName);
             if (tag != null && isValidFaction(tag)) return tag;
 
-            tag = extractFactionTag(team.getColorSuffix());
+            tag = extractFactionTag(team.getColorSuffix(), pName);
             if (tag != null && isValidFaction(tag)) return tag;
         }
 
         // 3. Extraer desde DisplayName
         String displayName = player.getDisplayName().getFormattedText();
         if (displayName != null) {
-            String tag = extractFactionTag(displayName);
-            if (tag != null && isValidFaction(tag) && !tag.equalsIgnoreCase(player.getName())) return tag;
+            String tag = extractFactionTag(displayName, pName);
+            if (tag != null && isValidFaction(tag)) return tag;
         }
 
         // 4. Extraer desde Tab List (NetworkPlayerInfo)
@@ -525,35 +611,39 @@ public class NametagMod extends Mod {
                 if (info != null) {
                     if (info.getDisplayName() != null) {
                         String tabText = info.getDisplayName().getFormattedText();
-                        String tag = extractFactionTag(tabText);
-                        if (tag != null && isValidFaction(tag) && !tag.equalsIgnoreCase(player.getName())) return tag;
+                        String tag = extractFactionTag(tabText, pName);
+                        if (tag != null && isValidFaction(tag)) return tag;
                     }
 
                     ScorePlayerTeam tabTeam = info.getPlayerTeam();
                     if (tabTeam != null) {
-                        String tag = extractFactionTag(tabTeam.getColorPrefix());
+                        String tag = extractFactionTag(tabTeam.getColorPrefix(), pName);
                         if (tag != null && isValidFaction(tag)) return tag;
 
-                        tag = extractFactionTag(tabTeam.getColorSuffix());
+                        tag = extractFactionTag(tabTeam.getColorSuffix(), pName);
+                        if (tag != null && isValidFaction(tag)) return tag;
+
+                        String formatted = ScorePlayerTeam.formatPlayerName(tabTeam, info.getGameProfile().getName());
+                        tag = extractFactionTag(formatted, pName);
                         if (tag != null && isValidFaction(tag)) return tag;
                     }
                 }
             }
         } catch (Throwable ignored) {}
 
-        // 5. Nombre de equipo registrado si tiene prefijo fac_ o f_
+        // 5. Nombre de equipo registrado si no es genérico ni clasificador
         if (team != null) {
             String teamName = team.getRegisteredName();
             if (teamName != null) {
-                String lower = teamName.toLowerCase();
-                if (lower.startsWith("fac_") || lower.startsWith("f_") || lower.startsWith("team_")) {
-                    int idx = teamName.indexOf('_');
-                    if (idx != -1 && idx < teamName.length() - 1) {
-                        String cand = teamName.substring(idx + 1);
-                        if (isValidFaction(cand)) {
-                            return cand;
-                        }
+                String cleanTeam = teamName.replaceAll("^[0-9]+_", ""); // quitar ordenadores 01_, 02_
+                if (cleanTeam.toLowerCase().startsWith("fac_") || cleanTeam.toLowerCase().startsWith("f_") || cleanTeam.toLowerCase().startsWith("team_")) {
+                    int idx = cleanTeam.indexOf('_');
+                    if (idx != -1 && idx < cleanTeam.length() - 1) {
+                        cleanTeam = cleanTeam.substring(idx + 1);
                     }
+                }
+                if (isValidFaction(cleanTeam) && !cleanTeam.equalsIgnoreCase(pName)) {
+                    return cleanTeam;
                 }
             }
         }
@@ -561,10 +651,10 @@ public class NametagMod extends Mod {
         return null;
     }
 
-    private String extractFactionTag(String text) {
+    private String extractFactionTag(String text, String playerName) {
         if (text == null || text.trim().isEmpty()) return null;
 
-        String clean = text.replaceAll("(?i)§[0-9a-fk-or]", "").trim();
+        String clean = text.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim();
         if (clean.isEmpty()) return null;
 
         // Caso HCF compuesto: [Bulls | 6.0 ■ | Silver V]
@@ -574,38 +664,44 @@ public class NametagMod extends Mod {
             if (pipe > start + 1) {
                 String cand = clean.substring(start + 1, pipe).trim();
                 cand = cand.replaceAll("[^a-zA-Z0-9_]", "");
-                if (isValidFaction(cand)) {
+                if (isValidFaction(cand) && (playerName == null || !cand.equalsIgnoreCase(playerName))) {
                     return cand;
                 }
             }
         }
 
-        // Caso corchetes directos: [Bulls]
+        // Caso corchetes directos: [Bulls], o múltiples corchetes: [Enemy] [Bulls]
         Matcher m = BRACKET_TAG.matcher(clean);
-        if (m.find()) {
+        while (m.find()) {
             String tag = m.group(1).trim();
-            if (isValidFaction(tag)) return tag;
+            if (isValidFaction(tag) && (playerName == null || !tag.equalsIgnoreCase(playerName))) {
+                return tag;
+            }
         }
 
         // Caso asteriscos: *Bulls*
         m = STAR_TAG.matcher(clean);
-        if (m.find()) {
+        while (m.find()) {
             String tag = m.group(1).trim();
-            if (isValidFaction(tag)) return tag;
+            if (isValidFaction(tag) && (playerName == null || !tag.equalsIgnoreCase(playerName))) {
+                return tag;
+            }
         }
 
         // Caso barras: |Bulls|
         m = BAR_TAG.matcher(clean);
-        if (m.find()) {
+        while (m.find()) {
             String tag = m.group(1).trim();
-            if (isValidFaction(tag)) return tag;
+            if (isValidFaction(tag) && (playerName == null || !tag.equalsIgnoreCase(playerName))) {
+                return tag;
+            }
         }
 
-        // Si la primera palabra parece nombre de facción
+        // Buscar en todas las palabras separadas por espacios
         String[] parts = clean.split("\\s+");
-        if (parts.length >= 1) {
-            String candidate = parts[0].replaceAll("[^a-zA-Z0-9_]", "");
-            if (isValidFaction(candidate)) {
+        for (String part : parts) {
+            String candidate = part.replaceAll("[^a-zA-Z0-9_]", "");
+            if (isValidFaction(candidate) && (playerName == null || !candidate.equalsIgnoreCase(playerName))) {
                 return candidate;
             }
         }
@@ -615,12 +711,25 @@ public class NametagMod extends Mod {
 
     public boolean isValidFaction(String tag) {
         if (tag == null) return false;
-        String clean = tag.replaceAll("(?i)§[0-9a-fk-or]", "").trim();
+        String clean = tag.replaceAll("(?i)[§&][0-9a-fk-or]", "").trim();
         clean = clean.replaceAll("[^a-zA-Z0-9_]", "");
         if (clean.length() < 2 || clean.length() > 16) return false;
         if (clean.matches("^[0-9]+$")) return false;
 
         String lower = clean.toLowerCase();
+
+        // Comprobación de subcadenas no deseadas (relaciones, roles, estadísticas, colores)
+        if (lower.contains("enem") || lower.contains("alli") || lower.contains("ally") ||
+            lower.contains("neutr") || lower.contains("team") || lower.contains("lead") ||
+            lower.contains("offic") || lower.contains("capt") || lower.contains("colead") ||
+            lower.contains("factions") || lower.contains("faction") || lower.contains("miembr") ||
+            lower.contains("member") || lower.contains("death") || lower.contains("kill") ||
+            lower.contains("dtr") || lower.contains("ping") || lower.contains("heart") ||
+            lower.contains("vida") || lower.contains("dist") || lower.contains("bloq") ||
+            lower.contains("bloque") || lower.contains("block")) {
+            return false;
+        }
+
         if (BLACKLISTED_TAGS.contains(lower)) {
             return false;
         }
