@@ -113,8 +113,11 @@
                     </StackPanel>
                 </CheckBox>
 
-                <CheckBox x:Name="ChkDesktopShortcut" IsChecked="True">
-                    <TextBlock Text="Crear acceso directo en el Escritorio" FontWeight="SemiBold" Margin="5,0,0,0"/>
+                <CheckBox x:Name="ChkDesktopShortcut" IsChecked="False">
+                    <StackPanel Margin="5,0,0,0">
+                        <TextBlock Text="Crear acceso directo en el Escritorio" FontWeight="SemiBold"/>
+                        <TextBlock Text="Opcional. Si tienes OneDrive, Windows Defender puede mostrar aviso de seguridad." FontSize="10" Foreground="#7E879B"/>
+                    </StackPanel>
                 </CheckBox>
 
                 <CheckBox x:Name="ChkStartMenuShortcut" IsChecked="True">
