@@ -31,7 +31,10 @@ public class NametagMod extends Mod {
 
     public final BooleanSetting showFaction = new BooleanSetting("Mostrar Facción", true);
     public final BooleanSetting showHealth = new BooleanSetting("Mostrar Vida (HP)", true);
-    public final BooleanSetting showStats = new BooleanSetting("Mostrar Ping y Kills", true);
+    public final BooleanSetting showStats = new BooleanSetting("Mostrar Estadísticas", true);
+    public final BooleanSetting showPing = new BooleanSetting("Mostrar Ping", true);
+    public final BooleanSetting showKills = new BooleanSetting("Mostrar Kills", true);
+    public final BooleanSetting showDeaths = new BooleanSetting("Mostrar Deaths", true);
     public final BooleanSetting showArmor = new BooleanSetting("Mostrar Armadura", false);
     public final BooleanSetting showEmblem = new BooleanSetting("Mostrar Emblema", true);
     public final BooleanSetting throughWalls = new BooleanSetting("A través de Paredes", true);
@@ -62,8 +65,8 @@ public class NametagMod extends Mod {
     ));
 
     public NametagMod() {
-        super("Nametags", "Etiquetas estilo HCF con facción, DTR, rango, vida, ping y stats", Category.RENDER);
-        addSettings(showFaction, showHealth, showStats, showArmor, showEmblem, throughWalls, background, scale, maxDistance);
+        super("Nametags", "Etiquetas estilo HCF con facción, DTR, rango, vida, ping, kills y deaths", Category.RENDER);
+        addSettings(showFaction, showHealth, showStats, showPing, showKills, showDeaths, showArmor, showEmblem, throughWalls, background, scale, maxDistance);
         setEnabled(true);
     }
 
@@ -169,8 +172,13 @@ public class NametagMod extends Mod {
                                     if (!clean.toLowerCase().contains("enemies") && !clean.toLowerCase().contains("enemy")) {
                                         serverFactionLine = txt;
                                     }
-                                } else if (txt.contains("⚒") || txt.contains("⚔") || (txt.contains(":") && txt.contains("|"))) {
-                                    serverStatsLine = txt;
+                                } else if (txt.contains("⚒") || txt.contains("⚔") || txt.contains("☠") ||
+                                           clean.toLowerCase().contains("kill") || clean.toLowerCase().contains("death") ||
+                                           clean.toLowerCase().contains("muerte") || (txt.contains(":") && txt.contains("|"))) {
+                                    // Descartar si solo es indicador de distancia en metros o bloques
+                                    if (!clean.toLowerCase().endsWith("m") && !clean.toLowerCase().contains("bloque")) {
+                                        serverStatsLine = txt;
+                                    }
                                 }
                             }
                         }
@@ -193,17 +201,27 @@ public class NametagMod extends Mod {
             lines.add(new NametagLine(healthText, false));
         }
 
-        // Línea 3: Stats (⚒: 16 | ⚔: 30 con caja oscura)
+        // Línea 3: Stats (⚒: 16 | ⚔: 5 | ☠: 1 con caja oscura)
         if (showStats.isEnabled()) {
             String statsText;
             if (serverStatsLine != null) {
                 statsText = serverStatsLine;
             } else {
-                int ping = getPing(player);
-                int kills = getKills(player);
-                statsText = "§a⚒: " + ping + " §7| §c⚔: " + (kills > 0 ? kills : (int) distance);
+                List<String> parts = new ArrayList<>();
+                if (showPing.isEnabled()) {
+                    parts.add("§a⚒: " + getPing(player));
+                }
+                if (showKills.isEnabled()) {
+                    parts.add("§c⚔: " + getKills(player));
+                }
+                if (showDeaths.isEnabled()) {
+                    parts.add("§4☠: " + getDeaths(player));
+                }
+                statsText = String.join(" §7| ", parts);
             }
-            lines.add(new NametagLine(statsText, true));
+            if (statsText != null && !statsText.isEmpty()) {
+                lines.add(new NametagLine(statsText, true));
+            }
         }
 
         // Línea 4: Facción con DTR y Rango ([Bulls | 6.0 ■ | Silver V] con caja oscura)
@@ -353,10 +371,39 @@ public class NametagMod extends Mod {
             Scoreboard sb = mc.theWorld.getScoreboard();
             if (sb != null) {
                 for (ScoreObjective obj : sb.getScoreObjectives()) {
-                    String objName = obj.getName().toLowerCase();
-                    if (objName.contains("kill") || objName.contains("streak") || objName.contains("stat")) {
+                    if (obj == null) continue;
+                    String criteria = obj.getCriteria() != null ? obj.getCriteria().getName().toLowerCase() : "";
+                    String objName = obj.getName() != null ? obj.getName().toLowerCase() : "";
+                    String display = obj.getDisplayName() != null ? obj.getDisplayName().toLowerCase() : "";
+
+                    if (criteria.contains("kill") || objName.contains("kill") || objName.contains("streak") ||
+                        display.contains("kill") || display.contains("streak")) {
                         Score score = sb.getValueFromObjective(player.getName(), obj);
-                        if (score != null && score.getScorePoints() > 0) {
+                        if (score != null && score.getScorePoints() >= 0) {
+                            return score.getScorePoints();
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return 0;
+    }
+
+    public int getDeaths(EntityPlayer player) {
+        if (player == null || mc.theWorld == null) return 0;
+        try {
+            Scoreboard sb = mc.theWorld.getScoreboard();
+            if (sb != null) {
+                for (ScoreObjective obj : sb.getScoreObjectives()) {
+                    if (obj == null) continue;
+                    String criteria = obj.getCriteria() != null ? obj.getCriteria().getName().toLowerCase() : "";
+                    String objName = obj.getName() != null ? obj.getName().toLowerCase() : "";
+                    String display = obj.getDisplayName() != null ? obj.getDisplayName().toLowerCase() : "";
+
+                    if (criteria.contains("death") || objName.contains("death") || objName.contains("muerte") ||
+                        objName.contains("dead") || display.contains("death") || display.contains("muerte")) {
+                        Score score = sb.getValueFromObjective(player.getName(), obj);
+                        if (score != null && score.getScorePoints() >= 0) {
                             return score.getScorePoints();
                         }
                     }
