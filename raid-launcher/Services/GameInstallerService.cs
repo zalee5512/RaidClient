@@ -408,6 +408,13 @@ namespace RaidLauncher.Services
                     }
                 }
 
+                // ─── 5b. Asegurar SpongePowered Mixin para el cliente ──────────────────
+                string mixinJarPath = Path.Combine(librariesDir, "org", "spongepowered", "mixin", "0.7.10-SNAPSHOT", "mixin-0.7.10-SNAPSHOT.jar");
+                if (!File.Exists(mixinJarPath) || new FileInfo(mixinJarPath).Length < 100000)
+                {
+                    ExtractResourceIfMissing("mixin-0.7.10-SNAPSHOT.jar", mixinJarPath, forceOverwrite: true);
+                }
+
                 // ─── 6. Sincronizar RaidClient-1.0.jar en .raidclient/mods ──────────────
                 onStatus?.Invoke("Sincronizando Raid Client...");
                 onProgress?.Invoke(88, "Instalando módulos de Raid Client...");

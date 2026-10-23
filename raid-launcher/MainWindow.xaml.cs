@@ -40,7 +40,7 @@ namespace RaidLauncher
                     BtnPlay.IsEnabled = true;
                     PanelLaunchProgress.Visibility = Visibility.Collapsed;
                     ProgressBarGlobal.Visibility = Visibility.Collapsed;
-                    UpdateStatus("Juego cerrado. Listo para jugar con Raid Client.");
+                    UpdateStatus("Juego cerrado. (Puedes revisar el registro haciendo clic en '📜 Ver Logs').");
                 });
             };
 
@@ -536,6 +536,12 @@ namespace RaidLauncher
         {
             var dialog = new InstallDialogWindow();
             dialog.ShowDialog();
+        }
+
+        private void BtnViewLogs_Click(object sender, RoutedEventArgs e)
+        {
+            var viewer = new LogViewerWindow();
+            viewer.ShowDialog();
         }
 
         // Play Game

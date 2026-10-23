@@ -94,9 +94,23 @@ namespace RaidLauncher.Services
                     string args = BuildJavaArgs(config, mcDir, username, accessToken, uuid, activeForge);
 
                     string appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".raidlauncher");
-                    string logFile = Path.Combine(appDir, "minecraft_output.log");
-                    StreamWriter? logWriter = null;
-                    try { logWriter = new StreamWriter(logFile, false) { AutoFlush = true }; } catch { }
+                    string logsDir = Path.Combine(mcDir, "logs");
+                    Directory.CreateDirectory(appDir);
+                    Directory.CreateDirectory(logsDir);
+
+                    string logFile1 = Path.Combine(appDir, "minecraft_output.log");
+                    string logFile2 = Path.Combine(logsDir, "minecraft_output.log");
+
+                    StreamWriter? logWriter1 = null;
+                    StreamWriter? logWriter2 = null;
+                    try { logWriter1 = new StreamWriter(logFile1, false) { AutoFlush = true }; } catch { }
+                    try { logWriter2 = new StreamWriter(logFile2, false) { AutoFlush = true }; } catch { }
+
+                    Action<string> writeLog = line =>
+                    {
+                        try { logWriter1?.WriteLine(line); } catch { }
+                        try { logWriter2?.WriteLine(line); } catch { }
+                    };
 
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
@@ -114,15 +128,21 @@ namespace RaidLauncher.Services
                     var proc = Process.Start(psi);
                     if (proc != null)
                     {
-                        proc.OutputDataReceived += (s, e) => { if (e.Data != null) logWriter?.WriteLine(e.Data); };
-                        proc.ErrorDataReceived += (s, e) => { if (e.Data != null) logWriter?.WriteLine(e.Data); };
+                        proc.OutputDataReceived += (s, e) => { if (e.Data != null) writeLog(e.Data); };
+                        proc.ErrorDataReceived += (s, e) => { if (e.Data != null) writeLog(e.Data); };
                         proc.BeginOutputReadLine();
                         proc.BeginErrorReadLine();
 
                         proc.EnableRaisingEvents = true;
                         proc.Exited += (s, e) =>
                         {
-                            try { logWriter?.Flush(); logWriter?.Close(); } catch { }
+                            try
+                            {
+                                writeLog($"\n--- [PROCESO TERMINADO] Código de salida: {proc.ExitCode} a las {DateTime.Now} ---");
+                                logWriter1?.Flush(); logWriter1?.Close();
+                                logWriter2?.Flush(); logWriter2?.Close();
+                            }
+                            catch { }
                             GameExited?.Invoke();
                         };
 
@@ -388,6 +408,20 @@ namespace RaidLauncher.Services
             if (File.Exists(vanillaJar))
             {
                 cpList.Add(vanillaJar);
+            }
+
+            // 4. SpongePowered Mixin JAR (Requerido para MixinTweaker)
+            string mixinJar = Path.Combine(mcDir, "libraries", "org", "spongepowered", "mixin", "0.7.10-SNAPSHOT", "mixin-0.7.10-SNAPSHOT.jar");
+            if (File.Exists(mixinJar) && !cpList.Contains(mixinJar))
+            {
+                cpList.Add(mixinJar);
+            }
+
+            // 5. RaidClient JAR (Requerido en classpath para CorePlugin y MixinLoader)
+            string modJar = Path.Combine(mcDir, "mods", "RaidClient-1.0.jar");
+            if (File.Exists(modJar) && !cpList.Contains(modJar))
+            {
+                cpList.Add(modJar);
             }
 
             return string.Join(";", cpList);
