@@ -29,7 +29,7 @@ public class AutoTextMod extends Mod {
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public AutoTextMod() {
-        super("AutoText Hotkeys", "Ejecuta comandos o mensajes de chat totalmente personalizables con cualquier tecla", Category.UTILITY);
+        super("AutoText", "Ejecuta comandos o mensajes de chat totalmente personalizables con cualquier tecla", Category.UTILITY);
         INSTANCE = this;
         addSettings(showChatNotice);
         setEnabled(true);

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Tutorial con IA - Cómo Instalar Raid Client</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.25); }
+      50% { box-shadow: 0 0 35px rgba(0, 229, 255, 0.5); }
+    }
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(1000%); }
+    }
+    .glow-cyan {
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.35);
+    }
+    .voice-bar {
+      transition: height 0.15s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-[#0A0D14] text-[#E2E8F0] antialiased p-4 md:p-8 min-h-screen flex flex-col items-center justify-center">
+
+  <div class="max-w-4xl w-full">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <span class="text-xl">⚡</span>
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-bold text-white tracking-wide flex items-center gap-2">
+            Raid Client • Video Tutorial con IA
+            <span class="text-xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded-full font-mono">1080p • 60 FPS</span>
+          </h1>
+          <p class="text-xs text-slate-400">Guía audiovisual paso a paso para descargar, instalar y jugar en Minecraft 1.8.9</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Download -->
+      <a href="https://github.com/zalee5512/RaidClient/releases/latest/download/Raid.Client.Launcher.exe" 
+         target="_blank"
+         class="hidden sm:flex items-center gap-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg transition-all shadow-md shadow-cyan-400/20">
+        <span>⬇️ Descargar v1.0.7</span>
+      </a>
+    </div>
+
+    <!-- Video Container -->
+    <div class="relative bg-[#0E121B] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl glow-cyan">
+      
+      <!-- Video Screen Area (16:9 ratio) -->
+      <div id="videoScreen" class="relative w-full aspect-video bg-[#090C12] overflow-hidden flex flex-col items-center justify-center select-none">
+        
+        <!-- Background Grid Pattern -->
+        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#00E5FF_1px,transparent_1px)] [background-size:24px_24px]"></div>
+
+        <!-- Scanline Effect -->
+        <div class="absolute inset-0 pointer-events-none opacity-5 bg-gradient-to-b from-transparent via-cyan-400 to-transparent w-full h-8 animate-[scanline_8s_linear_infinite]"></div>
+
+        <!-- ================= SCENE 0: INTRO ================= -->
+        <div id="scene0" class="scene absolute inset-0 flex flex-col items-center justify-center p-8 transition-opacity duration-500">
+          <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center mb-6 shadow-2xl shadow-cyan-400/30 animate-pulse">
+            <span class="text-4xl">⚡</span>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight text-center">
+            RAID CLIENT <span class="text-cyan-400">1.8.9</span>
+          </h2>
+          <p class="text-slate-400 text-sm md:text-base mt-2 max-w-md text-center">
+            Lanzador de alto rendimiento para Minecraft PvP con autoinstalador de Forge y Java.
+          </p>
+          <div class="mt-6 flex items-center gap-2 bg-slate-900/80 border border-slate-700/60 px-3 py-1.5 rounded-full text-xs text-slate-300">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            Haz clic en Reproducir para iniciar el tutorial
+          </div>
+        </div>
+
+        <!-- ================= SCENE 1: GITHUB DOWNLOAD ================= -->
+        <div id="scene1" class="scene absolute inset-0 hidden flex-col items-center justify-center p-6 transition-opacity duration-500">
+          <div class="w-full max-w-lg bg-[#141824] border border-slate-700/80 rounded-xl p-5 shadow-xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">🐙</span>
+                <span class="text-xs font-mono text-cyan-400 font-semibold">github.com/zalee5512/RaidClient/releases</span>
+              </div>
+              <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30">Latest v1.0.7</span>
+            </div>
+
+            <div class="bg-[#0C0F17] border border-slate-800 rounded-lg p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold">
+                  EXE
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-white">Raid.Client.Launcher.exe</div>
+                  <div class="text-xs text-slate-500">141 MB • Autocontenido con Java 8 y Forge</div>
+                </div>
+              </div>
+
+              <!-- Animated Cursor -->
+              <div class="relative">
+                <button class="bg-cyan-400 text-slate-950 px-4 py-2 rounded-lg font-bold text-xs shadow-md shadow-cyan-400/30 scale-105 animate-bounce">
+                  Descargar
+                </button>
+                <div class="absolute -bottom-5 -right-3 text-xl pointer-events-none drop-shadow">
+                  👆
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 text-xs text-cyan-400 font-mono flex items-center gap-2">
+            <span>PASO 1</span> • Descarga el ejecutable desde los Releases oficiales de GitHub
+          </div>
+        </div>
+
+        <!-- ================= SCENE 2: WIZARD & PATH INSTALLATION ================= -->
+        <div id="scene2" class="scene absolute inset-0 hidden flex-col items-center justify-center p-6 transition-opacity duration-500">
+          <div class="w-full max-w-md bg-[#111522] border-2 border-cyan-500/40 rounded-xl p-5 shadow-2xl">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-cyan-400 text-lg">⚡</span>
+              <span class="text-xs font-bold text-white tracking-wider">INSTALADOR DE RAID CLIENT</span>
+            </div>
+            
+            <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+              Instalación automática en su propio espacio para no ensuciar la carpeta Downloads:
+            </p>
+
+            <div class="bg-[#0B0D14] border border-slate-800 rounded p-2.5 mb-3 font-mono text-[11px] text-cyan-300">
+              📁 %LOCALAPPDATA%\Programs\RaidClient\
+            </div>
+
+            <div class="space-y-2 text-xs text-slate-200">
+              <div class="flex items-center gap-2 text-cyan-300">
+                <span>☑</span> <span>Agregar al <b>PATH de Windows</b> (comando 'raid')</span>
+              </div>
+              <div class="flex items-center gap-2 text-emerald-400">
+                <span>☑</span> <span>Crear acceso en el <b>Menú Inicio</b></span>
+              </div>
+              <div class="flex items-center gap-2 text-slate-400">
+                <span>☐</span> <span>Acceso en Escritorio (Opcional, evita avisos OneDrive)</span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800 flex justify-end">
+              <button class="bg-cyan-400 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-lg shadow-lg shadow-cyan-400/30 ring-2 ring-cyan-300/50">
+                ⚡ INSTALAR Y ABRIR
+              </button>
+            </div>
+          </div>
+          <div class="mt-4 text-xs text-cyan-400 font-mono flex items-center gap-2">
+            <span>PASO 2</span> • Elige "Instalar y Abrir" para registrarlo en el sistema
+          </div>
+        </div>
+
+        <!-- ================= SCENE 3: AUTOMATIC ASSET & FORGE DOWNLOAD ================= -->
+        <div id="scene3" class="scene absolute inset-0 hidden flex-col items-center justify-center p-6 transition-opacity duration-500">
+          <div class="w-full max-w-lg bg-[#111624] border border-cyan-500/30 rounded-xl p-5 shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
+                <span class="text-xs font-bold text-white">Preparando carpeta propia: <span class="text-cyan-400 font-mono">%APPDATA%\.raidclient</span></span>
+              </div>
+              <span id="scene3Pct" class="text-xs font-bold text-cyan-400">100%</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800 mb-4 p-0.5">
+              <div id="scene3Bar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full w-full transition-all duration-700"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
+              <div class="flex items-center gap-2 bg-[#090C13] p-2 rounded border border-slate-800">
+                <span class="text-emerald-400">✓</span> Minecraft 1.8.9 Base
+              </div>
+              <div class="flex items-center gap-2 bg-[#090C13] p-2 rounded border border-slate-800">
+                <span class="text-emerald-400">✓</span> Motor Forge 1.8.9
+              </div>
+              <div class="flex items-center gap-2 bg-[#090C13] p-2 rounded border border-slate-800">
+                <span class="text-emerald-400">✓</span> Librerías Nativas Windows
+              </div>
+              <div class="flex items-center gap-2 bg-[#090C13] p-2 rounded border border-slate-800">
+                <span class="text-emerald-400">✓</span> Motor Java 8 Portable
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 text-xs text-cyan-400 font-mono flex items-center gap-2">
+            <span>PASO 3</span> • Verificación automática e instalación sin intervención manual
+          </div>
+        </div>
+
+        <!-- ================= SCENE 4: LAUNCHER & ACCOUNT SELECTOR ================= -->
+        <div id="scene4" class="scene absolute inset-0 hidden flex-col items-center justify-center p-6 transition-opacity duration-500">
+          <div class="w-full max-w-lg bg-[#0F1420] border border-slate-700/80 rounded-xl overflow-hidden shadow-2xl">
+            <!-- Launcher Top Bar -->
+            <div class="bg-[#141826] px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span>⚡</span>
+                <span class="text-xs font-bold text-white">RAID LAUNCHER</span>
+                <span class="text-[10px] text-slate-500 font-mono">v1.0.7 • 1.8.9</span>
+              </div>
+              <div class="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded">
+                ✓ Listo para jugar
+              </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-5 flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-lg bg-slate-800 border-2 border-cyan-400/40 flex items-center justify-center text-2xl shadow-md">
+                  🧑‍🚀
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-white flex items-center gap-2">
+                    aleexdlol
+                    <span class="text-[9px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded font-mono font-bold">PREMIUM</span>
+                  </div>
+                  <div class="text-xs text-slate-400 mt-0.5">Versión: 1.8.9 • RAM: 3 GB (Óptima)</div>
+                </div>
+              </div>
+
+              <!-- Play Button -->
+              <button class="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-black text-sm px-6 py-3 rounded-xl shadow-xl shadow-cyan-400/25 tracking-wider transition-all scale-105 animate-pulse">
+                JUGAR (1.8.9)
+              </button>
+            </div>
+          </div>
+          <div class="mt-4 text-xs text-cyan-400 font-mono flex items-center gap-2">
+            <span>PASO 4</span> • Inicia con tu cuenta No-Premium o Microsoft y pulsa JUGAR
+          </div>
+        </div>
+
+        <!-- ================= SCENE 5: IN-GAME PVP & CLICKGUI ================= -->
+        <div id="scene5" class="scene absolute inset-0 hidden flex-col items-center justify-center p-6 transition-opacity duration-500">
+          <div class="w-full max-w-lg h-64 bg-[#141822] border-2 border-cyan-400/30 rounded-xl relative overflow-hidden shadow-2xl p-4 flex flex-col justify-between">
+            <!-- Simulated Minecraft World Background -->
+            <div class="absolute inset-0 opacity-25 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
+
+            <!-- In-Game HUD Elements -->
+            <div class="relative z-10 flex justify-between items-start">
+              <div class="bg-black/70 backdrop-blur border border-slate-700/50 rounded px-2.5 py-1 text-xs font-mono font-bold text-white flex items-center gap-2 shadow">
+                <span class="text-cyan-400">FPS:</span> 480
+              </div>
+              <div class="bg-black/70 backdrop-blur border border-slate-700/50 rounded px-2.5 py-1 text-xs font-mono font-bold text-white flex items-center gap-2 shadow">
+                <span class="text-cyan-400">CPS:</span> 14 | 16
+              </div>
+            </div>
+
+            <!-- Simulated Custom Crosshair -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div class="relative w-6 h-6 flex items-center justify-center">
+                <div class="absolute w-4 h-0.5 bg-cyan-400"></div>
+                <div class="absolute h-4 w-0.5 bg-cyan-400"></div>
+                <div class="w-1 h-1 rounded-full bg-cyan-300 shadow shadow-cyan-400"></div>
+              </div>
+            </div>
+
+            <!-- In-game Nametag preview -->
+            <div class="absolute top-16 left-1/2 -translate-x-1/2 flex flex-col items-center">
+              <div class="text-cyan-400 text-xs">ᛟ</div>
+              <div class="bg-black/80 px-2 py-0.5 rounded text-[11px] font-bold text-red-400 border border-red-500/30">
+                EnemyPlayer
+              </div>
+              <div class="text-[10px] text-white font-bold">20 <span class="text-red-500">❤</span></div>
+              <div class="bg-black/80 px-2 py-0.5 rounded text-[10px] text-slate-300 font-mono">
+                <span class="text-emerald-400">⚒: 32</span> | <span class="text-rose-400">⚔: 14</span> | <span class="text-red-500">☠: 3</span>
+              </div>
+            </div>
+
+            <!-- Right Shift Key Notification -->
+            <div class="relative z-10 self-center bg-cyan-500/20 border border-cyan-400/40 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-cyan-300 shadow-lg">
+              Presiona <span class="bg-cyan-400 text-slate-950 px-1.5 py-0.5 rounded font-mono text-[11px]">RIGHT SHIFT</span> para abrir el ClickGUI
+            </div>
+          </div>
+          <div class="mt-4 text-xs text-cyan-400 font-mono flex items-center gap-2">
+            <span>PASO 5</span> • ¡Listo! Disfruta de Raid Client con FPS máximos y mods de PvP
+          </div>
+        </div>
+
+        <!-- Dynamic Subtitles Overlay -->
+        <div class="absolute bottom-4 left-6 right-6 pointer-events-none text-center">
+          <p id="subtitlesText" class="inline-block bg-black/85 backdrop-blur-md border border-slate-700/60 px-4 py-1.5 rounded-full text-xs md:text-sm text-cyan-200 font-medium shadow-2xl transition-all duration-300">
+            Haz clic en Reproducir para comenzar el tutorial narrado por IA.
+          </p>
+        </div>
+
+        <!-- Big Play Button Overlay (when stopped) -->
+        <div id="playOverlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center cursor-pointer transition-opacity duration-300">
+          <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-cyan-400/90 hover:bg-cyan-300 text-slate-950 flex items-center justify-center pl-1 text-3xl shadow-2xl shadow-cyan-400/40 transition-transform transform hover:scale-110">
+            ▶
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Video Control Bar -->
+      <div class="bg-[#0B0E16] border-t border-slate-800 p-3 flex flex-col gap-2">
+        
+        <!-- Scrubber Progress Bar -->
+        <div class="relative w-full h-2 bg-slate-800 rounded-full cursor-pointer overflow-hidden group" id="progressBarContainer">
+          <div id="progressBar" class="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full w-0 transition-all duration-200"></div>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="flex items-center justify-between text-xs text-slate-300">
+          <div class="flex items-center gap-3">
+            <button id="btnPlayPause" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-sm font-bold text-white transition-colors">
+              ▶
+            </button>
+            <button id="btnRestart" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xs text-slate-400 hover:text-white transition-colors">
+              ↺
+            </button>
+            <span id="timeDisplay" class="font-mono text-slate-400 text-xs">00:00 / 01:15</span>
+
+            <!-- AI Voice Equalizer Indicator -->
+            <div id="voiceEqualizer" class="hidden items-center gap-0.5 ml-2 px-2 py-1 rounded bg-cyan-500/10 border border-cyan-500/20">
+              <span class="text-[10px] text-cyan-400 mr-1 font-mono font-bold">VOZ IA:</span>
+              <div class="voice-bar w-1 bg-cyan-400 rounded-full h-2 animate-bounce"></div>
+              <div class="voice-bar w-1 bg-cyan-300 rounded-full h-4 animate-bounce [animation-delay:0.1s]"></div>
+              <div class="voice-bar w-1 bg-cyan-400 rounded-full h-3 animate-bounce [animation-delay:0.2s]"></div>
+              <div class="voice-bar w-1 bg-cyan-200 rounded-full h-2 animate-bounce [animation-delay:0.3s]"></div>
+            </div>
+          </div>
+
+          <!-- Step Buttons Quick Jump -->
+          <div class="hidden md:flex items-center gap-1.5">
+            <button onclick="jumpToStep(1)" class="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-cyan-500/20 hover:text-cyan-400 text-[11px] font-mono transition-colors">1. Descarga</button>
+            <button onclick="jumpToStep(2)" class="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-cyan-500/20 hover:text-cyan-400 text-[11px] font-mono transition-colors">2. Instalar</button>
+            <button onclick="jumpToStep(3)" class="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-cyan-500/20 hover:text-cyan-400 text-[11px] font-mono transition-colors">3. Archivos</button>
+            <button onclick="jumpToStep(4)" class="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-cyan-500/20 hover:text-cyan-400 text-[11px] font-mono transition-colors">4. Cuenta</button>
+            <button onclick="jumpToStep(5)" class="px-2.5 py-1 rounded bg-slate-800/80 hover:bg-cyan-500/20 hover:text-cyan-400 text-[11px] font-mono transition-colors">5. Jugar</button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="btnVoiceToggle" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-400 flex items-center gap-1">
+              <span>🔊</span> <span id="txtVoiceStatus">Voz Activada</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Step Description Cards Grid Below Player -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mt-6">
+      <div onclick="jumpToStep(1)" class="cursor-pointer bg-[#0E121B] hover:bg-[#141A28] border border-slate-800 hover:border-cyan-500/40 p-3 rounded-xl transition-all">
+        <div class="text-xs font-bold text-cyan-400 font-mono mb-1">01 • DESCARGA</div>
+        <div class="text-xs text-white font-semibold">GitHub Releases</div>
+        <p class="text-[11px] text-slate-400 mt-1">Baja el archivo oficial Raid.Client.Launcher.exe.</p>
+      </div>
+
+      <div onclick="jumpToStep(2)" class="cursor-pointer bg-[#0E121B] hover:bg-[#141A28] border border-slate-800 hover:border-cyan-500/40 p-3 rounded-xl transition-all">
+        <div class="text-xs font-bold text-cyan-400 font-mono mb-1">02 • INSTALADOR</div>
+        <div class="text-xs text-white font-semibold">Espacio Propio &amp; PATH</div>
+        <p class="text-[11px] text-slate-400 mt-1">Se instala en Programs y se registra en PATH.</p>
+      </div>
+
+      <div onclick="jumpToStep(3)" class="cursor-pointer bg-[#0E121B] hover:bg-[#141A28] border border-slate-800 hover:border-cyan-500/40 p-3 rounded-xl transition-all">
+        <div class="text-xs font-bold text-cyan-400 font-mono mb-1">03 • AUTO-FORGE</div>
+        <div class="text-xs text-white font-semibold">Minecraft &amp; Java 8</div>
+        <p class="text-[11px] text-slate-400 mt-1">Descarga automática en .raidclient sin tocar .minecraft.</p>
+      </div>
+
+      <div onclick="jumpToStep(4)" class="cursor-pointer bg-[#0E121B] hover:bg-[#141A28] border border-slate-800 hover:border-cyan-500/40 p-3 rounded-xl transition-all">
+        <div class="text-xs font-bold text-cyan-400 font-mono mb-1">04 • CUENTAS</div>
+        <div class="text-xs text-white font-semibold">No-Premium / Microsoft</div>
+        <p class="text-[11px] text-slate-400 mt-1">Ingresa tu nick o inicia sesión oficial.</p>
+      </div>
+
+      <div onclick="jumpToStep(5)" class="cursor-pointer bg-[#0E121B] hover:bg-[#141A28] border border-slate-800 hover:border-cyan-500/40 p-3 rounded-xl transition-all">
+        <div class="text-xs font-bold text-cyan-400 font-mono mb-1">05 • EN EL JUEGO</div>
+        <div class="text-xs text-white font-semibold">Right Shift &amp; HUD</div>
+        <p class="text-[11px] text-slate-400 mt-1">Mira personalizada, Nametags con Deaths y FPS boost.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Video Steps Script Definition
+    const steps = [
+      {
+        id: 0,
+        sceneId: 'scene0',
+        duration: 8,
+        title: "Bienvenido a Raid Client",
+        narration: "Bienvenido al tutorial oficial de instalación de Raid Client para Minecraft 1.8.9. En menos de un minuto tendrás el cliente optimizado con mods de PvP listo para jugar.",
+        subtitles: "⚡ Bienvenido al tutorial oficial de instalación de Raid Client para Minecraft 1.8.9."
+      },
+      {
+        id: 1,
+        sceneId: 'scene1',
+        duration: 15,
+        title: "Paso 1: Descarga del Launcher Oficial",
+        narration: "Paso uno: Ingresa al repositorio oficial en GitHub y dirígete a la sección de Releases. Descarga el archivo ejecutable Raid Client Launcher punto exe.",
+        subtitles: "📥 Paso 1: Descarga Raid.Client.Launcher.exe desde la página oficial de GitHub Releases."
+      },
+      {
+        id: 2,
+        sceneId: 'scene2',
+        duration: 18,
+        title: "Paso 2: Instalación en espacio propio y PATH",
+        narration: "Paso dos: Al ejecutar el archivo, se abrirá el asistente. Selecciona Instalar y Abrir. Esto instalará el launcher en su propio espacio en Programs y lo registrará en el PATH de Windows.",
+        subtitles: "⚙️ Paso 2: Pulsa 'Instalar y Abrir' para aislar el launcher en Programs y agregarlo al PATH."
+      },
+      {
+        id: 3,
+        sceneId: 'scene3',
+        duration: 16,
+        title: "Paso 3: Verificación automática de archivos",
+        narration: "Paso tres: El lanzador creará su propia carpeta punto raidclient. Descargará e instalará automáticamente Forge 1.8.9, librerías gráficas y Java 8 sin tocar tu carpeta punto minecraft.",
+        subtitles: "📦 Paso 3: Auto-descarga de Minecraft 1.8.9, Forge, librerías nativas y Java 8 en .raidclient."
+      },
+      {
+        id: 4,
+        sceneId: 'scene4',
+        duration: 14,
+        title: "Paso 4: Elección de cuenta y botón Jugar",
+        narration: "Paso cuatro: En el gestor de cuentas, agrega tu nombre de usuario para jugar No-Premium o inicia con tu cuenta oficial de Microsoft. Luego haz clic en el botón Jugar.",
+        subtitles: "🎮 Paso 4: Elige tu nombre de jugador No-Premium o cuenta Microsoft y pulsa JUGAR (1.8.9)."
+      },
+      {
+        id: 5,
+        sceneId: 'scene5',
+        duration: 20,
+        title: "Paso 5: En el juego y Menú de Mods",
+        narration: "Paso cinco: Minecraft abrirá con fluidez total y más de 400 FPS. Presiona la tecla Shift Derecho para abrir el menú de mods, editar tu HUD y configurar la mira y los nametags.",
+        subtitles: "🏆 Paso 5: ¡Listo para jugar! Presiona RIGHT SHIFT para abrir el menú de mods y editar tu HUD."
+      }
+    ];
+
+    let currentStepIndex = 0;
+    let isPlaying = false;
+    let timer = null;
+    let stepElapsed = 0;
+    let voiceEnabled = true;
+
+    const totalDuration = steps.reduce((acc, s) => acc + s.duration, 0);
+
+    // Elements
+    const playOverlay = document.getElementById('playOverlay');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const btnRestart = document.getElementById('btnRestart');
+    const progressBar = document.getElementById('progressBar');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const subtitlesText = document.getElementById('subtitlesText');
+    const voiceEqualizer = document.getElementById('voiceEqualizer');
+    const btnVoiceToggle = document.getElementById('btnVoiceToggle');
+    const txtVoiceStatus = document.getElementById('txtVoiceStatus');
+
+    // Speech Synthesis
+    function speakText(text) {
+      if (!voiceEnabled || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-ES';
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => {
+        voiceEqualizer.classList.remove('hidden');
+        voiceEqualizer.classList.add('flex');
+      };
+
+      utterance.onend = () => {
+        voiceEqualizer.classList.add('hidden');
+        voiceEqualizer.classList.remove('flex');
+      };
+
+      utterance.onerror = () => {
+        voiceEqualizer.classList.add('hidden');
+        voiceEqualizer.classList.remove('flex');
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function showScene(index) {
+      // Hide all scenes
+      for (let i = 0; i <= 5; i++) {
+        const el = document.getElementById('scene' + i);
+        if (el) {
+          el.classList.add('hidden');
+          el.classList.remove('flex');
+        }
+      }
+
+      // Show current scene
+      const active = document.getElementById(steps[index].sceneId);
+      if (active) {
+        active.classList.remove('hidden');
+        active.classList.add('flex');
+      }
+
+      subtitlesText.innerText = steps[index].subtitles;
+
+      if (isPlaying) {
+        speakText(steps[index].narration);
+      }
+    }
+
+    function calculateTotalElapsed() {
+      let prevTime = 0;
+      for (let i = 0; i < currentStepIndex; i++) {
+        prevTime += steps[i].duration;
+      }
+      return prevTime + stepElapsed;
+    }
+
+    function updateTimeDisplay() {
+      const elapsed = calculateTotalElapsed();
+      const pct = Math.min(100, (elapsed / totalDuration) * 100);
+      progressBar.style.width = pct + '%';
+
+      const formatTime = (secs) => {
+        const m = Math.floor(secs / 60);
+        const s = Math.floor(secs % 60);
+        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+      };
+
+      timeDisplay.innerText = `${formatTime(elapsed)} / ${formatTime(totalDuration)}`;
+    }
+
+    function tick() {
+      if (!isPlaying) return;
+
+      stepElapsed += 0.5;
+      updateTimeDisplay();
+
+      if (stepElapsed >= steps[currentStepIndex].duration) {
+        stepElapsed = 0;
+        if (currentStepIndex < steps.length - 1) {
+          currentStepIndex++;
+          showScene(currentStepIndex);
+        } else {
+          // Finished
+          pauseVideo();
+          currentStepIndex = 0;
+          stepElapsed = 0;
+          updateTimeDisplay();
+          showScene(0);
+          return;
+        }
+      }
+
+      timer = setTimeout(tick, 500);
+    }
+
+    function playVideo() {
+      isPlaying = true;
+      playOverlay.classList.add('opacity-0', 'pointer-events-none');
+      btnPlayPause.innerText = '⏸';
+      showScene(currentStepIndex);
+      tick();
+    }
+
+    function pauseVideo() {
+      isPlaying = false;
+      if (timer) clearTimeout(timer);
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      voiceEqualizer.classList.add('hidden');
+      voiceEqualizer.classList.remove('flex');
+      playOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      btnPlayPause.innerText = '▶';
+    }
+
+    function jumpToStep(index) {
+      if (timer) clearTimeout(timer);
+      currentStepIndex = index;
+      stepElapsed = 0;
+      updateTimeDisplay();
+      showScene(currentStepIndex);
+      if (!isPlaying) {
+        playVideo();
+      }
+    }
+
+    // Event Listeners
+    playOverlay.addEventListener('click', () => {
+      if (!isPlaying) playVideo();
+    });
+
+    btnPlayPause.addEventListener('click', () => {
+      if (isPlaying) pauseVideo();
+      else playVideo();
+    });
+
+    btnRestart.addEventListener('click', () => {
+      pauseVideo();
+      currentStepIndex = 0;
+      stepElapsed = 0;
+      updateTimeDisplay();
+      showScene(0);
+      playVideo();
+    });
+
+    btnVoiceToggle.addEventListener('click', () => {
+      voiceEnabled = !voiceEnabled;
+      if (!voiceEnabled && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        voiceEqualizer.classList.add('hidden');
+      }
+      txtVoiceStatus.innerText = voiceEnabled ? 'Voz Activada' : 'Voz Silenciada';
+    });
+
+    // ProgressBar Click Jump
+    progressBarContainer.addEventListener('click', (e) => {
+      const rect = progressBarContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = clickX / rect.width;
+      const targetTime = pct * totalDuration;
+
+      let accumulated = 0;
+      for (let i = 0; i < steps.length; i++) {
+        if (targetTime <= accumulated + steps[i].duration) {
+          currentStepIndex = i;
+          stepElapsed = targetTime - accumulated;
+          break;
+        }
+        accumulated += steps[i].duration;
+      }
+
+      updateTimeDisplay();
+      showScene(currentStepIndex);
+      if (!isPlaying) playVideo();
+    });
+
+    // Initial Setup
+    showScene(0);
+    updateTimeDisplay();
+  </script>
+</body>
+</html>

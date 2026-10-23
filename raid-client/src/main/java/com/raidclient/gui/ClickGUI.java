@@ -96,13 +96,14 @@ public class ClickGUI extends GuiScreen {
         fontRendererObj.drawStringWithShadow("RAID CLIENT", panelX + 10, panelY + 9, 0xFF00E5FF);
         fontRendererObj.drawStringWithShadow("v1.8.9", panelX + 78, panelY + 10, 0x77AAAAAA);
 
-        // 1. "⚡ Macros"
-        float atBtnX = panelX + panelW - 222;
-        float atBtnW = 66;
+        // 1. "⚡ AutoText"
+        float atBtnW = 76;
+        float atBtnX = panelX + panelW - 232;
         boolean atHovered = mouseX >= atBtnX && mouseX <= atBtnX + atBtnW && mouseY >= panelY + 5 && mouseY <= panelY + 22;
         RenderUtils.drawRoundedRect(atBtnX, panelY + 5, atBtnW, 17, 3, atHovered ? 0xFF00E5FF : 0x33192538);
         RenderUtils.drawOutline(atBtnX, panelY + 5, atBtnW, 17, 1.0F, atHovered ? 0xFFFFFFFF : 0x4400E5FF);
-        fontRendererObj.drawStringWithShadow("⚡ Macros", atBtnX + 6, panelY + 9, atHovered ? 0xFF0E1118 : 0xFF00E5FF);
+        int atStrW = fontRendererObj.getStringWidth("⚡ AutoText");
+        fontRendererObj.drawStringWithShadow("⚡ AutoText", atBtnX + (atBtnW - atStrW) / 2.0F, panelY + 9, atHovered ? 0xFF0E1118 : 0xFF00E5FF);
 
         // 2. "⚔ Puntos"
         float wpBtnX = panelX + panelW - 152;
@@ -369,7 +370,7 @@ public class ClickGUI extends GuiScreen {
             boolean btnHover = mx >= btnX && mx <= btnX + btnW && my >= btnY && my <= btnY + btnH;
             RenderUtils.drawRoundedRect(btnX, btnY, btnW, btnH, 4, btnHover ? 0xFF00E5FF : 0xFF192538);
             RenderUtils.drawOutline(btnX, btnY, btnW, btnH, 1.0F, 0x5500E5FF);
-            String label = "⚡ CONFIGURAR MACROS";
+            String label = "⚡ CONFIGURAR AUTOTEXT";
             int labelW = fontRendererObj.getStringWidth(label);
             fontRendererObj.drawStringWithShadow(label, btnX + (btnW - labelW) / 2.0F, btnY + 6, btnHover ? 0xFF0E1118 : 0xFF00E5FF);
         }
@@ -457,8 +458,9 @@ public class ClickGUI extends GuiScreen {
 
         // Quick Actions
         // 1. "AutoText"
-        float atBtnX = panelX + panelW - 222;
-        if (mouseX >= atBtnX && mouseX <= atBtnX + 66 && mouseY >= panelY + 5 && mouseY <= panelY + 22) {
+        float atBtnW = 76;
+        float atBtnX = panelX + panelW - 232;
+        if (mouseX >= atBtnX && mouseX <= atBtnX + atBtnW && mouseY >= panelY + 5 && mouseY <= panelY + 22) {
             mc.displayGuiScreen(new AutoTextScreen());
             return;
         }
