@@ -532,6 +532,12 @@ namespace RaidLauncher
             Process.Start(new ProcessStartInfo { FileName = dir, UseShellExecute = true });
         }
 
+        private void BtnReinstallPath_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new InstallDialogWindow();
+            dialog.ShowDialog();
+        }
+
         // Play Game
         private async void BtnPlay_Click(object sender, RoutedEventArgs e)
         {

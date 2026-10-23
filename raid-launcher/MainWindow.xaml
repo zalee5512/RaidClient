@@ -319,11 +319,12 @@
                                     <!-- PvP JVM Optimization Checkbox -->
                                     <CheckBox x:Name="ChkOptimizePvp" Content="Activar optimización de Garbage Collector para PvP (Menor latencia de frames)" Foreground="#FFF" FontSize="13" IsChecked="True" Margin="0,0,0,25" Checked="ChkOptimizePvp_Changed" Unchecked="ChkOptimizePvp_Changed"/>
 
-                                    <!-- Open Mods Folder -->
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Content="📂 Abrir Carpeta de Mods (.minecraft/mods)" Style="{StaticResource ActionButtonStyle}" Background="#1E273A" Foreground="#00E5FF" Margin="0,0,10,0" Click="BtnOpenMods_Click"/>
-                                        <Button Content="📁 Abrir Carpeta del Launcher" Style="{StaticResource ActionButtonStyle}" Background="#1E273A" Foreground="#00E5FF" Click="BtnOpenLauncherDir_Click"/>
-                                    </StackPanel>
+                                    <!-- Actions & Directory Shortcuts -->
+                                    <WrapPanel Orientation="Horizontal">
+                                        <Button Content="📂 Carpeta de Mods (.raidclient/mods)" Style="{StaticResource ActionButtonStyle}" Background="#1E273A" Foreground="#00E5FF" Margin="0,0,10,10" Click="BtnOpenMods_Click"/>
+                                        <Button Content="📁 Carpeta de Datos (.raidclient)" Style="{StaticResource ActionButtonStyle}" Background="#1E273A" Foreground="#00E5FF" Margin="0,0,10,10" Click="BtnOpenLauncherDir_Click"/>
+                                        <Button Content="⚡ Instalar en PATH y Accesos Directos" Style="{StaticResource ActionButtonStyle}" Background="#1E273A" Foreground="#00E5FF" Margin="0,0,10,10" Click="BtnReinstallPath_Click"/>
+                                    </WrapPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
